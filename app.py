@@ -20,20 +20,20 @@ st.markdown(
 # Cargar los datos de los asistentes desde el Excel
 @st.cache_data
 def cargar_datos():
-  # Nombre exacto del archivo Excel adjunto
-  archivo_excel = (
-      "Inscripción V Congreso Nacional de Cardiología y Cuidado Crítico"
-      " Cardiovascular(1-274).xlsx"
-  )
+  # Usamos el nombre corto y sin espacios para evitar errores
+  archivo_excel = "asistentes.xlsx"
   df = pd.read_excel(archivo_excel)
 
   # Limpiar y normalizar los números de documento como texto
   df["Número de documento"] = (
-      df["Número de documento"].astype(str).str.strip().str.replace(".0", "", regex=False)
+      df["Número de documento"]
+      .astype(str)
+      .str.strip()
+      .str.replace(".0", "", regex=False)
   )
   df["Nombre completo"] = df["Nombre completo"].astype(str).str.strip()
 
-  # Filtrar filas vacías o de prueba (como el ID 1 con valor 1)
+  # Filtrar filas vacías o de prueba
   df = df[df["Número de documento"] != "1"]
   return df
 
@@ -59,30 +59,26 @@ if st.button("Consultar Certificado"):
 
     if not resultado.empty:
       nombre_asistente = resultado.iloc[0]["Nombre completo"]
-      profesion = resultado.iloc[0]["¿Cuál es tu profesión?"]
       st.success(
           f"¡Registro encontrado! Bienvenido(a), **{nombre_asistente}**."
       )
 
       # --- Generación del Certificado Dinámico ---
       try:
-        # Cargar la plantilla en imagen PNG de alta resolución
+        # Cargar la plantilla en imagen PNG
         plantilla_path = "plantilla_certificado.png"
         img = Image.open(plantilla_path)
         draw = ImageDraw.Draw(img)
 
-        # Configurar la fuente (asegúrate de incluir un archivo .ttf en la carpeta, ej. Arial.ttf o Montserrat-Bold.ttf)
         try:
           font = ImageFont.truetype("arial.ttf", size=55)
         except:
           font = ImageFont.load_default()
 
-        # Coordenadas (X, Y) aproximadas para ubicar el nombre centrado en el certificado horizontal (ej. 1920x1080)
-        # Puedes ajustar estos valores según el diseño exacto de tu plantilla en PowerPoint
+        # Coordenadas (X, Y) para ubicar el nombre centrado
         x_centro = 960
         y_pos = 520
 
-        # Dibujar el nombre centrado
         draw.text(
             (x_centro, y_pos),
             nombre_asistente.title(),
@@ -96,7 +92,7 @@ if st.button("Consultar Certificado"):
         img.save(pdf_bytes, format="PDF")
         pdf_bytes.seek(0)
 
-        # Botón para descargar el PDF directamente al celular o PC
+        # Botón para descargar
         st.download_button(
             label="📥 Descargar Certificado en PDF",
             data=pdf_bytes,
