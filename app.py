@@ -20,18 +20,29 @@ st.set_page_config(
 
 ARCHIVO_EXCEL = "asistentes.xlsx"
 PLANTILLA = "plantilla_certificado.png"
-LOGO = "icono-zentria.png"  # Nombre exacto del archivo del logo que subiste
+LOGO = "icono-zentria.png"
 FUENTE = "OpenSans-Italic.ttf"
 COLOR_TEXTO = "#7B1F6A"
 
-# Posiciones en proporción al tamaño de la plantilla
-X_CENTRO = 0.408  # centro horizontal de la línea del nombre
-Y_NOMBRE = 0.355  # justo encima de la línea de degradado
-Y_DOC = 0.420  # posición de "C.C."
-ANCHO_MAX = 0.60  # ancho máximo del nombre (proporción del ancho)
+# Posiciones en proporción al tamaño de la plantilla del PDF
+X_CENTRO = 0.408
+Y_NOMBRE = 0.355
+Y_DOC = 0.420
+ANCHO_MAX = 0.60
 
-st.title("Congreso Nacional de Cardiología y Cuidado Crítico Cardiovascular")
-st.subheader("Plataforma de Descarga de Certificados de Asistencia")
+# ----------------------------- Interfaz Web con Logo -----------------------------
+# Creamos dos columnas: una para el logo y otra para los títulos principales
+col_logo, col_texto = st.columns([1, 4])
+
+with col_logo:
+  try:
+    st.image(LOGO, width=130)  # Muestra el logo en la página web
+  except Exception:
+    pass
+
+with col_texto:
+  st.title("Congreso Nacional de Cardiología y Cuidado Crítico Cardiovascular")
+  st.subheader("Plataforma de Descarga de Certificados de Asistencia")
 
 st.markdown(
     "Por favor, ingresa tu **número de documento de identidad** (sin puntos ni"
@@ -58,7 +69,6 @@ def cargar_datos():
 
 
 def cargar_fuente(size):
-  """Intenta la fuente del proyecto, luego una del sistema, luego la por defecto."""
   for ruta in (
       FUENTE,
       "DejaVuSans-Oblique.ttf",
@@ -76,26 +86,24 @@ def generar_certificado_pdf(nombre, documento):
   img = Image.open(PLANTILLA).convert("RGB")
   W, H = img.size
 
-  # --- INCLUIR EL LOGO DE ZENTRIA EN LA ESQUINA SUPERIOR DERECHA ---
+  # Incluir el logo también en el PDF generado
   try:
-    logo = Image.open(LOGO).convert("RGBA")
-    # Definir un ancho proporcional para el logo (ej. 12% del ancho total)
+    logo_pdf = Image.open(LOGO).convert("RGBA")
     logo_ancho_deseado = int(W * 0.12)
-    aspect_ratio = logo.height / logo.width
+    aspect_ratio = logo_pdf.height / logo_pdf.width
     logo_alto_deseado = int(logo_ancho_deseado * aspect_ratio)
+    logo_pdf = logo_pdf.resize(
+        (logo_ancho_deseado, logo_alto_deseado), Image.Resampling.LANCZOS
+    )
 
-    logo = logo.resize((logo_ancho_deseado, logo_alto_deseado), Image.Resampling.LANCZOS)
-
-    # Márgenes desde la esquina superior derecha
     margen_derecho = int(W * 0.04)
     margen_superior = int(H * 0.04)
     pos_x = W - logo_ancho_deseado - margen_derecho
     pos_y = margen_superior
 
-    # Pegar el logo respetando sus transparencias
-    img.paste(logo, (pos_x, pos_y), logo)
-  except Exception as e:
-    pass  # Si ocurre algún inconveniente con el logo, el certificado se genera igual
+    img.paste(logo_pdf, (pos_x, pos_y), logo_pdf)
+  except Exception:
+    pass
 
   draw = ImageDraw.Draw(img)
 
@@ -104,7 +112,6 @@ def generar_certificado_pdf(nombre, documento):
   y_doc = int(H * Y_DOC)
   ancho_max = int(W * ANCHO_MAX)
 
-  # Nombre: reduce el tamaño si es muy largo
   nombre = nombre.title()
   size = int(H * 0.058)
   font_nombre = cargar_fuente(size)
@@ -142,7 +149,7 @@ except Exception as e:
   st.error(f"Error al cargar la base de datos de Excel: {e}")
   df_asistentes = None
 
-# ----------------------------- Interfaz -----------------------------
+# ----------------------------- Formulario de Consulta -----------------------------
 documento_input = st.text_input("Número de Documento de Identidad:")
 
 if st.button("Consultar Certificado"):
