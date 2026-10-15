@@ -20,7 +20,6 @@ st.markdown(
 # Cargar los datos de los asistentes desde el Excel
 @st.cache_data
 def cargar_datos():
-  # Usamos el nombre corto y sin espacios para evitar errores
   archivo_excel = "asistentes.xlsx"
   df = pd.read_excel(archivo_excel)
 
@@ -67,32 +66,50 @@ if st.button("Consultar Certificado"):
       try:
         # Cargar la plantilla en imagen PNG
         plantilla_path = "plantilla_certificado.png"
-        img = Image.open(plantilla_path)
+        img = Image.open(plantilla_path).convert("RGB")
         draw = ImageDraw.Draw(img)
 
+        # Intentar cargar una fuente estándar grande; si no está, usa la por defecto
         try:
-          font = ImageFont.truetype("arial.ttf", size=55)
+          font_nombre = ImageFont.truetype("arial.ttf", size=60)
+          font_doc = ImageFont.truetype("arial.ttf", size=35)
         except:
-          font = ImageFont.load_default()
+          font_nombre = ImageFont.load_default()
+          font_doc = ImageFont.load_default()
 
-        # Coordenadas (X, Y) para ubicar el nombre centrado
-        x_centro = 960
-        y_pos = 520
+        # Dimensiones de la imagen para calcular el centro horizontal exacto
+        ancho_img, alto_img = img.size
 
+        # Coordenadas orientativas (puedes ajustarlas según el diseño de tu PowerPoint)
+        # Asumiendo un certificado horizontal estándar (ej. 1920x1080 o similar)
+        x_centro = ancho_img // 2
+        y_nombre = int(alto_img * 0.48)  # Posición vertical para el nombre
+        y_doc = int(alto_img * 0.58)  # Posición vertical para la cédula
+
+        # Dibujar el Nombre Completo centrado
         draw.text(
-            (x_centro, y_pos),
+            (x_centro, y_nombre),
             nombre_asistente.title(),
             fill="#1B365D",
             anchor="mm",
-            font=font,
+            font=font_nombre,
         )
 
-        # Guardar en memoria como PDF
+        # Dibujar el Número de Documento centrado
+        draw.text(
+            (x_centro, y_doc),
+            f"C.C. {doc_buscado}",
+            fill="#333333",
+            anchor="mm",
+            font=font_doc,
+        )
+
+        # Guardar la imagen modificada directamente en un archivo PDF en memoria
         pdf_bytes = io.BytesIO()
         img.save(pdf_bytes, format="PDF")
         pdf_bytes.seek(0)
 
-        # Botón para descargar
+        # Botón para descargar el PDF ya personalizado
         st.download_button(
             label="📥 Descargar Certificado en PDF",
             data=pdf_bytes,
