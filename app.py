@@ -69,28 +69,31 @@ if st.button("Consultar Certificado"):
         img = Image.open(plantilla_path).convert("RGB")
         draw = ImageDraw.Draw(img)
 
-        # Intentar cargar una fuente estándar grande; si no está, usa la por defecto
+        # Intentar cargar una fuente estándar; si no está, usa la por defecto
         try:
-          font_nombre = ImageFont.truetype("arial.ttf", size=60)
-          font_doc = ImageFont.truetype("arial.ttf", size=35)
+          font_nombre = ImageFont.truetype("arial.ttf", size=55)
+          font_doc = ImageFont.truetype("arial.ttf", size=32)
         except:
           font_nombre = ImageFont.load_default()
           font_doc = ImageFont.load_default()
 
-        # Dimensiones de la imagen para calcular el centro horizontal exacto
+        # Dimensiones de la imagen
         ancho_img, alto_img = img.size
 
-        # Coordenadas orientativas (puedes ajustarlas según el diseño de tu PowerPoint)
-        # Asumiendo un certificado horizontal estándar (ej. 1920x1080 o similar)
+        # Coordenadas ajustadas al cuadro superior exacto de la plantilla:
         x_centro = ancho_img // 2
-        y_nombre = int(alto_img * 0.48)  # Posición vertical para el nombre
-        y_doc = int(alto_img * 0.58)  # Posición vertical para la cédula
+        y_nombre = int(
+            alto_img * 0.38
+        )  # Subido a la parte alta donde va el nombre
+        y_doc = int(
+            alto_img * 0.46
+        )  # Ubicado justo debajo del nombre, sobre la línea de la cédula
 
         # Dibujar el Nombre Completo centrado
         draw.text(
             (x_centro, y_nombre),
             nombre_asistente.title(),
-            fill="#1B365D",
+            fill="#592C5E",  # Color morado oscuro acorde al diseño del certificado
             anchor="mm",
             font=font_nombre,
         )
@@ -104,7 +107,7 @@ if st.button("Consultar Certificado"):
             font=font_doc,
         )
 
-        # Guardar la imagen modificada directamente en un archivo PDF en memoria
+        # Guardar en memoria como PDF
         pdf_bytes = io.BytesIO()
         img.save(pdf_bytes, format="PDF")
         pdf_bytes.seek(0)
