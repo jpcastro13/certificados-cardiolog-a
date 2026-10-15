@@ -4,6 +4,25 @@ import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
 import streamlit as st
 
+# --- OCULTAR LA BARRA SUPERIOR Y EL ICONO DE GITHUB ---
+hide_streamlit_style = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    </style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+# Configuración de la página
+st.set_page_config(
+    page_title="Certificados - V Congreso de Cardiología", page_icon="🫀"
+)
+
+st.title("V Congreso Nacional de Cardiología y Cuidado Crítico Cardiovascular")
+st.subheader("Plataforma de Descarga de Certificados de Asistencia")
+# ... (el resto de tu código sigue aquí abajo)
+
 # ----------------------------- Configuración -----------------------------
 st.set_page_config(
     page_title="Certificados - Congreso de Cardiología", page_icon="🫀"
